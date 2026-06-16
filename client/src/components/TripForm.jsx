@@ -7,6 +7,7 @@ const REGIONS = [
 
 const defaultForm = {
   budget: '',
+  budgetType: 'total',
   groupSize: '1',
   startDate: '',
   endDate: '',
@@ -44,7 +45,7 @@ export default function TripForm({ onSubmit, loading }) {
         </h3>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={labelClass}>Total Budget (USD)</label>
+            <label className={labelClass}>Budget (USD)</label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
               <input
@@ -54,9 +55,31 @@ export default function TripForm({ onSubmit, loading }) {
                 onChange={handleChange}
                 placeholder="3000"
                 required
-                className={inputClass + " pl-7"}
+                className={inputClass + " pl-7 pr-28"}
               />
+              <div className="absolute right-1 top-1/2 -translate-y-1/2 flex bg-slate-700 rounded-md overflow-hidden text-xs">
+                <button
+                  type="button"
+                  onClick={() => setForm(prev => ({ ...prev, budgetType: 'total' }))}
+                  className={`px-2.5 py-1.5 transition ${form.budgetType === 'total' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}
+                >
+                  Total
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm(prev => ({ ...prev, budgetType: 'per person' }))}
+                  className={`px-2.5 py-1.5 transition ${form.budgetType === 'per person' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}
+                >
+                  /person
+                </button>
+              </div>
             </div>
+            <p className="text-xs text-slate-500 mt-1.5">
+              {form.budgetType === 'per person'
+                ? `$${form.budget || '0'} per person — $${(Number(form.budget) * Number(form.groupSize)) || '0'} total for ${form.groupSize} ${Number(form.groupSize) === 1 ? 'person' : 'people'}`
+                : `$${form.budget || '0'} total — $${form.budget && form.groupSize ? Math.round(Number(form.budget) / Number(form.groupSize)) : '0'} per person`
+              }
+            </p>
           </div>
           <div>
             <label className={labelClass}>Group Size</label>
@@ -66,6 +89,18 @@ export default function TripForm({ onSubmit, loading }) {
               ))}
             </select>
           </div>
+        </div>
+        <div className="mt-4">
+          <label className={labelClass}>Departing From</label>
+          <input
+            type="text"
+            name="departureLocation"
+            value={form.departureLocation}
+            onChange={handleChange}
+            placeholder="e.g. Philadelphia, PA or PHL"
+            required
+            className={inputClass}
+          />
         </div>
       </div>
 

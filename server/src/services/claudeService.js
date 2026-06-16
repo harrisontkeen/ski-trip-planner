@@ -2,15 +2,24 @@ import axios from 'axios'
 
 export async function buildTripPlan(inputs) {
   const {
-    budget, startDate, endDate, skillLevel,
-    tripType, preferredRegion, passType, groupSize, flexibility
+    budget, budgetType, departureLocation, startDate, endDate,
+    skillLevel, tripType, preferredRegion, passType, groupSize, flexibility
   } = inputs
+
+  const totalBudget = budgetType === 'per person'
+    ? Number(budget) * Number(groupSize)
+    : Number(budget)
+
+  const perPersonBudget = budgetType === 'per person'
+    ? Number(budget)
+    : Math.round(Number(budget) / Number(groupSize))
 
   const prompt = `
 You are an expert ski trip planner. Based on the following user inputs, generate a detailed ski trip plan.
 
 USER INPUTS:
-- Budget: $${budget} total for ${groupSize} people
+- Budget: $${totalBudget} total ($${perPersonBudget} per person) for ${groupSize} people
+- Departure Location: ${departureLocation} (use this for flight suggestions)
 - Dates: ${startDate} to ${endDate}
 - Skill Level: ${skillLevel} (beginner/intermediate/advanced/expert)
 - Trip Type: ${tripType} (resort/backcountry/hybrid)
