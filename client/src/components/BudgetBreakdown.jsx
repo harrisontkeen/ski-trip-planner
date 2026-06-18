@@ -41,8 +41,15 @@ export default function BudgetBreakdown({ budget }) {
         <span className="text-xl font-bold text-white">${total}</span>
       </div>
 
-      {notes && (
+      {notes && typeof notes === 'string' && (
         <p className="text-xs text-slate-500 mt-3 leading-relaxed">{notes}</p>
+      )}
+      {notes && typeof notes === 'object' && (
+        <div className="text-xs text-slate-500 mt-3 leading-relaxed space-y-1">
+          {Object.values(notes).map((note, i) => (
+            <p key={i}>{note}</p>
+          ))}
+        </div>
       )}
     </div>
   )
