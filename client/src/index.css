@@ -1,3 +1,18 @@
 @import "tailwindcss";
-@import "tailwindcss";
-@import 'mapbox-gl/dist/mapbox-gl.css';
+
+.mapboxgl-marker {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  will-change: transform;
+}
+
+.mapboxgl-canvas-container {
+  position: relative !important;
+}
+
+.mapboxgl-canvas {
+  position: absolute !important;
+  top: 0;
+  left: 0;
+}

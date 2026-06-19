@@ -1,6 +1,5 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect } from 'react'
 import mapboxgl from 'mapbox-gl'
-import 'mapbox-gl/dist/mapbox-gl.css'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN
 
@@ -38,6 +37,7 @@ const AIRPORTS = {
   EGE: { lat: 39.6426, lng: -106.9177 },
   ASE: { lat: 39.2232, lng: -106.8689 },
   TEX: { lat: 37.9536, lng: -107.9088 },
+  SMF: { lat: 38.6954, lng: -121.5908 },
 }
 
 function getCoords(code) {
@@ -66,6 +66,7 @@ function addMarker(map, coords, emoji, color) {
     box-shadow: 0 2px 8px rgba(0,0,0,0.4);
     display: flex; align-items: center; justify-content: center;
     font-size: 14px; cursor: default;
+    position: relative;
   `
   el.innerHTML = emoji
   new mapboxgl.Marker(el).setLngLat([coords.lng, coords.lat]).addTo(map)
@@ -75,10 +76,14 @@ export default function MapView({ resorts, flightSuggestions }) {
   const mapContainer = useRef(null)
   const map = useRef(null)
   // activeResort used for hover tooltip — feature in progress
-  const [activeResort, setActiveResort] = useState(null)
-  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 })
 
   useEffect(() => {
+    console.log('MapView useEffect fired')
+    console.log('resorts:', resorts)
+    console.log('flightSuggestions:', flightSuggestions)
+    console.log('map.current exists:', !!map.current)
+    console.log('departure airport:', flightSuggestions?.[0]?.departureAirport)
+    console.log('nearest airport:', flightSuggestions?.[0]?.nearestAirport)
     if (!resorts || resorts.length === 0) return
     if (map.current) return
 
@@ -141,36 +146,19 @@ export default function MapView({ resorts, flightSuggestions }) {
           ? '#3b82f6'
           : '#64748b'
 
-        const el = document.createElement('div')
-        el.style.cssText = `
-          width: 36px; height: 36px; border-radius: 50%;
-          background: ${passColor}; border: 3px solid white;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-          cursor: pointer; display: flex; align-items: center;
-          justify-content: center; font-size: 16px;
-          transition: transform 0.15s ease;
-        `
-        el.innerHTML = '⛷️'
+        const popup = new mapboxgl.Popup({ offset: 25, closeButton: false })
+          .setHTML(`
+            <div style="font-family:system-ui;padding:4px;">
+              <p style="font-weight:700;font-size:14px;margin:0 0 4px 0;color:#0f172a">${resort.name}</p>
+              <p style="font-size:12px;color:#475569;margin:0 0 2px 0">${resort.region}</p>
+              <p style="font-size:12px;color:#475569;margin:0 0 6px 0">${resort.passType} Pass · $${resort.estimatedLiftTicket}/day</p>
+              <a href="${resort.bookingUrl}" target="_blank" style="font-size:12px;color:#2563eb;font-weight:600;">Get Tickets →</a>
+            </div>
+          `)
 
-        el.addEventListener('mouseenter', (e) => {
-          el.style.transform = 'scale(1.2)'
-          const rect = mapContainer.current.getBoundingClientRect()
-          setTooltipPos({ x: e.clientX - rect.left, y: e.clientY - rect.top })
-          setActiveResort(resort)
-        })
-
-        el.addEventListener('mousemove', (e) => {
-          const rect = mapContainer.current.getBoundingClientRect()
-          setTooltipPos({ x: e.clientX - rect.left, y: e.clientY - rect.top })
-        })
-
-        el.addEventListener('mouseleave', () => {
-          el.style.transform = 'scale(1)'
-          setActiveResort(null)
-        })
-
-        new mapboxgl.Marker(el)
+        new mapboxgl.Marker({ color: passColor })
           .setLngLat([resort.mapboxCoords.lng, resort.mapboxCoords.lat])
+          .setPopup(popup)
           .addTo(map.current)
       })
 
@@ -193,25 +181,8 @@ export default function MapView({ resorts, flightSuggestions }) {
   if (!resorts || resorts.length === 0) return null
 
   return (
-    <div className="relative rounded-xl overflow-hidden border border-slate-700/50" style={{ height: '420px' }}>
-      <div ref={mapContainer} style={{ width: '100%', height: '100%' }} />
-
-      {activeResort && (
-        <div
-          className="absolute z-50 pointer-events-none"
-          style={{ left: tooltipPos.x + 16, top: tooltipPos.y - 80 }}
-        >
-          <div className="bg-white rounded-lg shadow-xl p-3 min-w-48">
-            <p className="font-bold text-slate-900 text-sm">{activeResort.name}</p>
-            <p className="text-slate-500 text-xs mt-0.5">{activeResort.region}</p>
-            <p className="text-slate-500 text-xs">{activeResort.passType} Pass · ${activeResort.estimatedLiftTicket}/day</p>
-            <a href={activeResort.bookingUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-xs font-semibold mt-1.5 block pointer-events-auto">
-              Get Tickets →
-            </a>
-          </div>
-          <div className="w-3 h-3 bg-white rotate-45 mx-auto -mt-1.5 shadow-sm" />
-        </div>
-      )}
+    <div className="rounded-xl border border-slate-700/50" style={{ height: '420px', position: 'relative' }}>
+      <div ref={mapContainer} style={{ width: '100%', height: '100%', borderRadius: '0.75rem' }} />
 
       <div className="absolute bottom-4 left-4 bg-slate-900/90 backdrop-blur-sm rounded-lg px-3 py-2 flex items-center gap-4 text-xs text-slate-300">
         <span className="flex items-center gap-1.5">

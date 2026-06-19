@@ -21,6 +21,7 @@ CRITICAL FORMATTING RULES:
 - departureAirport must be ONLY the 3-letter IATA code for the departure city, nothing else
 - nearestAirport must be ONLY the 3-letter IATA code for the destination airport, nothing else
 - Never add descriptions or extra text to airport code fields
+- topResorts must contain EXACTLY 3 resort recommendations, no more, no less.
 
 USER INPUTS:
 - Budget: $${totalBudget} total ($${perPersonBudget} per person) for ${groupSize} people
