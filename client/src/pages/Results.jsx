@@ -4,6 +4,7 @@ import axios from 'axios'
 import ResortCard from '../components/ResortCard'
 import BudgetBreakdown from '../components/BudgetBreakdown'
 import LinksList from '../components/LinksList'
+import MapView from '../components/MapView'
 
 export default function Results() {
   const location = useLocation()
@@ -88,6 +89,12 @@ export default function Results() {
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-white mb-3">Your Trip Plan</h1>
           <p className="text-slate-300 leading-relaxed">{plan.summary}</p>
+        </div>
+
+        {/* Map */}
+        <div className="mb-8">
+          <h2 className="text-lg font-semibold text-white mb-4">Resort Locations</h2>
+          <MapView resorts={plan.topResorts} />
         </div>
 
         {/* Resorts */}
