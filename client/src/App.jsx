@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import Home from './pages/Home'
 import Results from './pages/Results'
+import Trips from './pages/Trips'
 import Navbar from './components/Navbar'
 
 export default function App() {
@@ -10,6 +11,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/results" element={<Results />} />
+        <Route path="/trips" element={<Trips />} />
       </Routes>
     </div>
   )

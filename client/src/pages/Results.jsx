@@ -1,4 +1,6 @@
 import { useLocation, Link } from 'react-router-dom'
+import { useState } from 'react'
+import axios from 'axios'
 import ResortCard from '../components/ResortCard'
 import BudgetBreakdown from '../components/BudgetBreakdown'
 import LinksList from '../components/LinksList'
@@ -6,6 +8,28 @@ import LinksList from '../components/LinksList'
 export default function Results() {
   const location = useLocation()
   const { plan, inputs } = location.state || {}
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState(null)
+
+  async function handleSave() {
+    setSaving(true)
+    setSaveError(null)
+    try {
+      const tripName = `${inputs?.preferredRegion || 'Trip'} — ${inputs?.startDate || ''}`
+      await axios.post('http://localhost:4000/api/trip/save', {
+        inputs,
+        plan,
+        tripName
+      })
+      setSaved(true)
+    } catch (err) {
+      setSaveError('Failed to save trip. Try again.')
+      console.error(err)
+    } finally {
+      setSaving(false)
+    }
+  }
 
   if (!plan) {
     return (
@@ -22,12 +46,38 @@ export default function Results() {
     <div className="min-h-screen bg-slate-900">
       <div className="max-w-5xl mx-auto px-6 py-10">
 
-        {/* Back link */}
-        <Link to="/" className="text-sm text-slate-400 hover:text-white transition inline-flex items-center gap-1 mb-6">
-          ← New search
-        </Link>
+        {/* Top bar */}
+        <div className="flex items-center justify-between mb-6">
+          <Link to="/" className="text-sm text-slate-400 hover:text-white transition inline-flex items-center gap-1">
+            ← New search
+          </Link>
+          <div className="flex items-center gap-3">
+            {saveError && (
+              <span className="text-xs text-red-400">{saveError}</span>
+            )}
+            {saved ? (
+              <span className="text-sm text-green-400 font-medium flex items-center gap-1.5">
+                ✓ Saved to trip log
+              </span>
+            ) : (
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="text-sm font-medium px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white transition"
+              >
+                {saving ? 'Saving...' : '💾 Save Trip'}
+              </button>
+            )}
+            <Link
+              to="/trips"
+              className="text-sm font-medium px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white transition"
+            >
+              My Trips
+            </Link>
+          </div>
+        </div>
 
-        {/* Warning banner, if present */}
+        {/* Warning banner */}
         {plan.importantWarning && (
           <div className="mb-6 p-4 bg-amber-900/30 border border-amber-700/40 rounded-xl text-amber-200 text-sm leading-relaxed">
             {plan.importantWarning}
@@ -53,7 +103,6 @@ export default function Results() {
         {/* Two column: budget + links */}
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           <BudgetBreakdown budget={plan.budgetBreakdown} />
-
           <div className="space-y-6">
             <LinksList
               title="Flights"
