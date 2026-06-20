@@ -4,6 +4,8 @@
 
 ### 6/19/2026
 - Got Claude API working, results page works flawlessly
+- Added Mapbox to show visually where the trip wants you to go
+- Added more possible regions to travel to
 
 ### 6/15/2026
 - Got initial setup with simple form - no response yet need to add anthropic key

@@ -9,7 +9,6 @@ import MapView from '../components/MapView'
 export default function Results() {
   const location = useLocation()
   const { plan, inputs } = location.state || {}
-  console.log('FULL PLAN:', JSON.stringify(plan?.flightSuggestions))
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState(null)
@@ -18,7 +17,7 @@ export default function Results() {
     setSaving(true)
     setSaveError(null)
     try {
-      const tripName = `${inputs?.preferredRegion || 'Trip'} — ${inputs?.startDate || ''}`
+      const tripName = `${inputs?.preferredRegion?.join(', ') || 'Trip'} — ${inputs?.startDate || ''}`
       await axios.post('http://localhost:4000/api/trip/save', {
         inputs,
         plan,
@@ -46,38 +45,58 @@ export default function Results() {
 
   return (
     <div className="min-h-screen bg-slate-900">
-      <div className="max-w-5xl mx-auto px-6 py-10">
 
-        {/* Top bar */}
-        <div className="flex items-center justify-between mb-6">
-          <Link to="/" className="text-sm text-slate-400 hover:text-white transition inline-flex items-center gap-1">
-            ← New search
-          </Link>
-          <div className="flex items-center gap-3">
-            {saveError && (
-              <span className="text-xs text-red-400">{saveError}</span>
-            )}
-            {saved ? (
-              <span className="text-sm text-green-400 font-medium flex items-center gap-1.5">
-                ✓ Saved to trip log
-              </span>
-            ) : (
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="text-sm font-medium px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white transition"
+      {/* Hero banner */}
+      <div className="relative bg-gradient-to-r from-blue-900/80 via-slate-800 to-slate-900 border-b border-slate-700/50 overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-10"
+          style={{
+            backgroundImage: 'radial-gradient(circle at 20% 50%, #3b82f6 0%, transparent 50%), radial-gradient(circle at 80% 20%, #8b5cf6 0%, transparent 40%)'
+          }}
+        />
+        <div className="relative max-w-5xl mx-auto px-6 py-8">
+          <div className="flex items-start justify-between">
+            <div>
+              <Link to="/" className="text-sm text-slate-400 hover:text-white transition inline-flex items-center gap-1 mb-3">
+                ← New search
+              </Link>
+              <h1 className="text-3xl font-bold text-white mb-1">
+                Your Trip Plan 🏔️
+              </h1>
+              <p className="text-slate-300 text-sm">
+                {plan.topResorts?.length} resorts recommended
+                {plan.budgetBreakdown?.total && ` · $${plan.budgetBreakdown.total.toLocaleString()} estimated total`}
+              </p>
+            </div>
+            <div className="flex items-center gap-3 mt-6">
+              {saveError && (
+                <span className="text-xs text-red-400">{saveError}</span>
+              )}
+              {saved ? (
+                <span className="text-sm text-green-400 font-medium flex items-center gap-1.5">
+                  ✓ Saved to trip log
+                </span>
+              ) : (
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="text-sm font-medium px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white transition"
+                >
+                  {saving ? 'Saving...' : '💾 Save Trip'}
+                </button>
+              )}
+              <Link
+                to="/trips"
+                className="text-sm font-medium px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white transition"
               >
-                {saving ? 'Saving...' : '💾 Save Trip'}
-              </button>
-            )}
-            <Link
-              to="/trips"
-              className="text-sm font-medium px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white transition"
-            >
-              My Trips
-            </Link>
+                My Trips
+              </Link>
+            </div>
           </div>
         </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto px-6 py-10">
 
         {/* Warning banner */}
         {plan.importantWarning && (
@@ -88,7 +107,7 @@ export default function Results() {
 
         {/* Summary */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white mb-3">Your Trip Plan</h1>
+          <h2 className="text-lg font-semibold text-white mb-3">Trip Summary</h2>
           <p className="text-slate-300 leading-relaxed">{plan.summary}</p>
         </div>
 

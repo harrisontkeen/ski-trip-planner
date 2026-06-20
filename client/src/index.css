@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); opacity: 0.4; }
+  50% { transform: translateY(-8px); opacity: 1; }
+}
+
 .mapboxgl-marker {
   position: absolute !important;
   top: 0 !important;

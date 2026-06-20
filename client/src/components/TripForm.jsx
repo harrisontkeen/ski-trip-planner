@@ -39,9 +39,9 @@ export default function TripForm({ onSubmit, loading }) {
     onSubmit(form)
   }
 
-  const inputClass = "w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
+  const inputClass = "w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
   const labelClass = "block text-sm font-medium text-slate-300 mb-1.5"
-  const sectionClass = "bg-slate-800/50 border border-slate-700/50 rounded-xl p-5"
+  const sectionClass = "bg-slate-900/40 border border-white/5 rounded-xl p-5"
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
