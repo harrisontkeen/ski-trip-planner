@@ -30,7 +30,7 @@ export default function Home() {
   // Cycle through staged "what we're doing" messages while generating so the
   // wait feels intentional. The cold-start message (statusMsg) takes priority.
   useEffect(() => {
-    if (!loading) { setStage(0); return }
+    if (!loading) return
     const id = setInterval(() => setStage(s => Math.min(s + 1, STAGES.length - 1)), 5000)
     return () => clearInterval(id)
   }, [loading])
@@ -39,6 +39,7 @@ export default function Home() {
     setLoading(true)
     setError(null)
     setStatusMsg(null)
+    setStage(0)
 
     // A cold start tends to be slow rather than failing outright — reassure the
     // user (without aborting) if it's taking a while.
