@@ -6,10 +6,19 @@ import heroBg from '../assets/front-page.jpeg'
 
 const WAKEUP_MESSAGE = "Waking up the server — the first request after it's been idle can take up to a minute…"
 
+const STAGES = [
+  'Scanning 150+ resorts for your perfect match…',
+  'Mapping out your day-by-day itinerary…',
+  'Pricing flights, lodging & lift tickets…',
+  'Finding the best food, bars & après spots…',
+  'Almost there — putting it all together…',
+]
+
 export default function Home() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [statusMsg, setStatusMsg] = useState(null)
+  const [stage, setStage] = useState(0)
   const navigate = useNavigate()
 
   // The backend (Render free tier) spins down when idle. Ping it on mount so it
@@ -17,6 +26,14 @@ export default function Home() {
   useEffect(() => {
     api.get('/health').catch(() => {})
   }, [])
+
+  // Cycle through staged "what we're doing" messages while generating so the
+  // wait feels intentional. The cold-start message (statusMsg) takes priority.
+  useEffect(() => {
+    if (!loading) { setStage(0); return }
+    const id = setInterval(() => setStage(s => Math.min(s + 1, STAGES.length - 1)), 5000)
+    return () => clearInterval(id)
+  }, [loading])
 
   async function handleSubmit(formData) {
     setLoading(true)
@@ -84,7 +101,7 @@ export default function Home() {
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">Planning your trip...</h2>
-          <p className="text-slate-400 text-sm mb-8">{statusMsg || 'Scanning resorts, flights, and lodging just for you'}</p>
+          <p className="text-slate-400 text-sm mb-8 transition-opacity duration-300">{statusMsg || STAGES[stage]}</p>
           <div className="flex gap-1.5">
             {[0, 1, 2, 3, 4].map(i => (
               <div
