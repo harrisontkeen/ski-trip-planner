@@ -1,4 +1,12 @@
 import axios from 'axios'
+import { readFileSync } from 'fs'
+
+// Curated resort database with verified coordinates, airports, and URLs.
+// Loaded once at startup and injected into the prompt so the model recommends
+// real resorts with real data instead of hallucinating coords and dead links.
+const RESORTS = JSON.parse(
+  readFileSync(new URL('../data/resorts.json', import.meta.url), 'utf-8')
+)
 
 export async function buildTripPlan(inputs) {
   const {
@@ -28,6 +36,17 @@ export async function buildTripPlan(inputs) {
     ? `${tripDays} day${tripDays === 1 ? '' : 's'} / ${nights} night${nights === 1 ? '' : 's'}`
     : 'unspecified length'
 
+  // Filter the verified resort DB by the user's pass so the model picks from
+  // real resorts (and copies their real coords / airport / URLs).
+  const passCandidates = RESORTS.filter(r => {
+    if (passType === 'Ikon') return r.passType === 'Ikon' || r.passType === 'none'
+    if (passType === 'Epic') return r.passType === 'Epic' || r.passType === 'none'
+    return true // none / flexible → consider all
+  })
+  const resortReference = passCandidates
+    .map(r => `${r.name} | ${r.region}, ${r.country} | ${r.passType} pass | ${r.lat},${r.lng} | airport ${r.nearestAirport} | site ${r.website} | tickets ${r.tickets}`)
+    .join('\n')
+
   const prompt = `
 You are an expert ski trip planner. Based on the following user inputs, generate a detailed ski trip plan.
 
@@ -42,6 +61,7 @@ CRITICAL FORMATTING RULES:
 - Each itinerary day must also include a "type" field — one of "travel", "ski", "rest", "explore", "departure" — used for visual styling. Day 1 is usually "travel" and the final day "departure".
 - Return ONLY valid JSON, no extra text, no markdown fences.
 - itinerary must have a MAXIMUM of 14 day entries regardless of trip length. For longer trips, group multiple days together (e.g. "Days 3-5: Powder Days at Snowbird").
+- PREFER resorts from the VERIFIED RESORT DATABASE below that match the user's region(s) and criteria. When you use one, copy its exact name, its lat/lng into mapboxCoords, its site into websiteUrl, its tickets URL into bookingUrl, and its airport as the nearestAirport. Only invent a resort if none in the list fit the request.
 
 USER INPUTS:
 - Budget: $${totalBudget} total ($${perPersonBudget} per person) for ${groupSize} people
@@ -54,6 +74,9 @@ ${preferredRegion.length > 1 ? `- Note: User selected multiple regions. Recommen
 - Pass Type: ${passType} (Ikon/Epic/none/flexible)
 - Flexibility: ${flexibility}
 - Additional preferences / extras: ${extras || 'none specified'}
+
+VERIFIED RESORT DATABASE (real resorts with verified coordinates, airports, and URLs — prefer these):
+${resortReference}
 
 Return ONLY valid JSON in this exact structure, no extra text:
 {
