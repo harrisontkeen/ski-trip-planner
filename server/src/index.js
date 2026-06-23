@@ -10,6 +10,11 @@ dotenv.config()
 const app = express()
 const PORT = process.env.PORT || 4000
 
+// Hosted behind a single proxy (Render/Vercel) — trust one hop so the rate
+// limiter keys on the real client IP instead of the proxy's (and can't be
+// bypassed with a spoofed X-Forwarded-For).
+app.set('trust proxy', 1)
+
 app.use(cors({
   origin: ['http://localhost:5173', process.env.FRONTEND_URL].filter(Boolean)
 }))

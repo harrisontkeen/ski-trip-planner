@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react'
 import mapboxgl from 'mapbox-gl'
+import { safeUrl } from '../lib/safeUrl'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN
 
@@ -58,6 +59,42 @@ function arcCoords(from, to, steps = 60) {
   return coords
 }
 
+// Build the resort popup as DOM nodes with textContent (never innerHTML), so
+// AI-supplied fields like resort.name can't inject markup/script. The booking
+// link is scheme-checked via safeUrl before it becomes an href.
+function buildPopupContent(resort) {
+  const wrap = document.createElement('div')
+  wrap.style.cssText = 'font-family:system-ui;padding:4px;'
+
+  const name = document.createElement('p')
+  name.style.cssText = 'font-weight:700;font-size:14px;margin:0 0 4px 0;color:#0f172a'
+  name.textContent = resort.name ?? ''
+
+  const region = document.createElement('p')
+  region.style.cssText = 'font-size:12px;color:#475569;margin:0 0 2px 0'
+  region.textContent = resort.region ?? ''
+
+  const pass = document.createElement('p')
+  pass.style.cssText = 'font-size:12px;color:#475569;margin:0 0 6px 0'
+  const ticket = resort.estimatedLiftTicket != null ? `$${resort.estimatedLiftTicket}/day` : ''
+  pass.textContent = [resort.passType ? `${resort.passType} Pass` : '', ticket].filter(Boolean).join(' · ')
+
+  wrap.append(name, region, pass)
+
+  const booking = safeUrl(resort.bookingUrl)
+  if (booking) {
+    const link = document.createElement('a')
+    link.href = booking
+    link.target = '_blank'
+    link.rel = 'noopener noreferrer'
+    link.style.cssText = 'font-size:12px;color:#2563eb;font-weight:600;'
+    link.textContent = 'Get Tickets →'
+    wrap.append(link)
+  }
+
+  return wrap
+}
+
 function addMarker(map, coords, emoji, color) {
   const el = document.createElement('div')
   el.style.cssText = `
@@ -78,12 +115,6 @@ export default function MapView({ resorts, flightSuggestions }) {
   // activeResort used for hover tooltip — feature in progress
 
   useEffect(() => {
-    console.log('MapView useEffect fired')
-    console.log('resorts:', resorts)
-    console.log('flightSuggestions:', flightSuggestions)
-    console.log('map.current exists:', !!map.current)
-    console.log('departure airport:', flightSuggestions?.[0]?.departureAirport)
-    console.log('nearest airport:', flightSuggestions?.[0]?.nearestAirport)
     if (!resorts || resorts.length === 0) return
     if (map.current) return
 
@@ -147,14 +178,7 @@ export default function MapView({ resorts, flightSuggestions }) {
           : '#64748b'
 
         const popup = new mapboxgl.Popup({ offset: 25, closeButton: false })
-          .setHTML(`
-            <div style="font-family:system-ui;padding:4px;">
-              <p style="font-weight:700;font-size:14px;margin:0 0 4px 0;color:#0f172a">${resort.name}</p>
-              <p style="font-size:12px;color:#475569;margin:0 0 2px 0">${resort.region}</p>
-              <p style="font-size:12px;color:#475569;margin:0 0 6px 0">${resort.passType} Pass · $${resort.estimatedLiftTicket}/day</p>
-              <a href="${resort.bookingUrl}" target="_blank" style="font-size:12px;color:#2563eb;font-weight:600;">Get Tickets →</a>
-            </div>
-          `)
+          .setDOMContent(buildPopupContent(resort))
 
         new mapboxgl.Marker({ color: passColor })
           .setLngLat([resort.mapboxCoords.lng, resort.mapboxCoords.lat])
