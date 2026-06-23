@@ -120,6 +120,8 @@ create policy "users_own_trips" on trips
   with check (auth.uid() = user_id);
 ```
 
+> Using the Supabase CLI? The `share_id` column also lives in [`supabase/seed.sql`](supabase/seed.sql), which runs automatically on `supabase db reset`. Note that `db reset` / `seed.sql` only touch your **local** database — apply the column to your hosted project via `supabase db push` (from a migration) or the dashboard SQL above.
+
 ### 4. Configure environment variables
 
 **`server/.env`**
