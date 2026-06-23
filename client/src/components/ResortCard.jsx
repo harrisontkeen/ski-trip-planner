@@ -1,4 +1,9 @@
+import { safeUrl } from '../lib/safeUrl'
+
 export default function ResortCard({ resort, rank }) {
+  const website = safeUrl(resort.websiteUrl)
+  const booking = safeUrl(resort.bookingUrl)
+
   const pass = resort.passType === 'Ikon'
     ? { bar: 'bg-purple-500', badge: 'bg-purple-500/20 text-purple-300 border-purple-500/30', glow: 'hover:shadow-purple-900/30' }
     : resort.passType === 'Epic'
@@ -44,22 +49,34 @@ export default function ResortCard({ resort, rank }) {
             </span>
           </div>
           <div className="flex gap-2">
-            <a
-              href={resort.websiteUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 text-center text-xs font-medium px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white transition"
-            >
-              Website
-            </a>
-            <a
-              href={resort.bookingUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 text-center text-xs font-medium px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition"
-            >
-              Get Tickets →
-            </a>
+            {website ? (
+              <a
+                href={website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 text-center text-xs font-medium px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white transition"
+              >
+                Website
+              </a>
+            ) : (
+              <span className="flex-1 text-center text-xs font-medium px-3 py-2 rounded-lg bg-slate-700/40 text-slate-500 cursor-not-allowed">
+                Website
+              </span>
+            )}
+            {booking ? (
+              <a
+                href={booking}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 text-center text-xs font-medium px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition"
+              >
+                Get Tickets →
+              </a>
+            ) : (
+              <span className="flex-1 text-center text-xs font-medium px-3 py-2 rounded-lg bg-blue-600/40 text-blue-200/50 cursor-not-allowed">
+                Get Tickets
+              </span>
+            )}
           </div>
         </div>
       </div>

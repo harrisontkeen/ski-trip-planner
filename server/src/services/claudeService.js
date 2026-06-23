@@ -3,16 +3,30 @@ import axios from 'axios'
 export async function buildTripPlan(inputs) {
   const {
     budget, budgetType, departureLocation, startDate, endDate,
-    skillLevel, tripType, preferredRegion, passType, groupSize, flexibility
+    skillLevel, tripType, preferredRegion, passType, groupSize, flexibility,
+    extras
   } = inputs
 
+  const groupCount = Number(groupSize) || 1
+
   const totalBudget = budgetType === 'per person'
-    ? Number(budget) * Number(groupSize)
+    ? Number(budget) * groupCount
     : Number(budget)
 
   const perPersonBudget = budgetType === 'per person'
     ? Number(budget)
-    : Math.round(Number(budget) / Number(groupSize))
+    : Math.round(Number(budget) / groupCount)
+
+  // Trip length, derived from the selected dates
+  const start = new Date(startDate)
+  const end = new Date(endDate)
+  const msPerDay = 1000 * 60 * 60 * 24
+  const nights = Math.round((end - start) / msPerDay)
+  const validLength = Number.isFinite(nights) && nights >= 0
+  const tripDays = validLength ? nights + 1 : null
+  const durationLabel = validLength
+    ? `${tripDays} day${tripDays === 1 ? '' : 's'} / ${nights} night${nights === 1 ? '' : 's'}`
+    : 'unspecified length'
 
   const prompt = `
 You are an expert ski trip planner. Based on the following user inputs, generate a detailed ski trip plan.
@@ -25,19 +39,21 @@ CRITICAL FORMATTING RULES:
 - itinerary must have one entry per day of the trip, covering arrival through departure.
 - Each itinerary day must have a "day" number, "title", "description", and "activities" array of 3-5 specific actionable items.
 - itinerary activities should be specific to the recommended resorts and region, not generic.
+- Each itinerary day must also include a "type" field — one of "travel", "ski", "rest", "explore", "departure" — used for visual styling. Day 1 is usually "travel" and the final day "departure".
 - Return ONLY valid JSON, no extra text, no markdown fences.
 - itinerary must have a MAXIMUM of 14 day entries regardless of trip length. For longer trips, group multiple days together (e.g. "Days 3-5: Powder Days at Snowbird").
 
 USER INPUTS:
 - Budget: $${totalBudget} total ($${perPersonBudget} per person) for ${groupSize} people
 - Departure Location: ${departureLocation} (use this for flight suggestions)
-- Dates: ${startDate} to ${endDate}
+- Dates: ${startDate} to ${endDate} (${durationLabel})
 - Skill Level: ${skillLevel} (beginner/intermediate/advanced/expert)
 - Trip Type: ${tripType} (resort/backcountry/hybrid)
 - Preferred Region(s): ${Array.isArray(preferredRegion) ? preferredRegion.join(', ') : preferredRegion}
 ${preferredRegion.length > 1 ? `- Note: User selected multiple regions. Recommend the single best region based on their other criteria (budget, skill level, dates, pass type) and explain why. Do not try to split resorts across regions unless the user specifically asked for a multi-destination trip in the extras field.` : ''}
 - Pass Type: ${passType} (Ikon/Epic/none/flexible)
 - Flexibility: ${flexibility}
+- Additional preferences / extras: ${extras || 'none specified'}
 
 Return ONLY valid JSON in this exact structure, no extra text:
 {
@@ -84,12 +100,14 @@ Return ONLY valid JSON in this exact structure, no extra text:
     {
       "day": 1,
       "title": "Arrival Day",
+      "type": "travel",
       "description": "Brief overview of the day",
       "activities": ["Pick up rental car at SLC", "Drive to resort (~45 min)", "Check into lodging", "Explore the village and grab dinner"]
     },
     {
       "day": 2,
       "title": "First Day on the Mountain",
+      "type": "ski",
       "description": "Brief overview of the day",
       "activities": ["Morning warm-up on groomed blues", "Ski school lesson if beginner", "Afternoon powder runs", "Après-ski at the lodge"]
     }
