@@ -103,6 +103,36 @@ export default function TripPlanView({ plan }) {
         </SectionCard>
       )}
 
+      {/* Getting there */}
+      {plan.gettingThere?.length > 0 && (
+        <SectionCard delay={0.19}>
+          <SectionHeading>Getting There</SectionHeading>
+          <ol className="space-y-3">
+            {plan.gettingThere.map((step, i) => (
+              <li key={i} className="flex gap-3 text-sm text-slate-300">
+                <span className="shrink-0 w-6 h-6 rounded-full bg-blue-600/20 border border-blue-500/30 text-blue-300 text-xs font-bold flex items-center justify-center">{i + 1}</span>
+                <span className="leading-relaxed pt-0.5">{step}</span>
+              </li>
+            ))}
+          </ol>
+        </SectionCard>
+      )}
+
+      {/* Food & nightlife */}
+      {plan.foodAndDrink?.length > 0 && (
+        <SectionCard delay={0.2}>
+          <SectionHeading>Food & Nightlife</SectionHeading>
+          <ul className="space-y-2.5">
+            {plan.foodAndDrink.map((item, i) => (
+              <li key={i} className="text-sm text-slate-300 flex gap-2.5 leading-relaxed">
+                <span className="text-amber-400 shrink-0">•</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </SectionCard>
+      )}
+
       {/* Budget + Links */}
       <div className="grid md:grid-cols-2 gap-6 fade-in-up" style={{ animationDelay: '0.2s' }}>
         <BudgetBreakdown budget={plan.budgetBreakdown} groupSize={plan.groupSize} />
@@ -136,6 +166,21 @@ export default function TripPlanView({ plan }) {
           descKey="description"
         />
       </SectionCard>
+
+      {/* Know before you go */}
+      {plan.essentials?.length > 0 && (
+        <SectionCard delay={0.28}>
+          <SectionHeading>Know Before You Go</SectionHeading>
+          <ul className="space-y-2.5">
+            {plan.essentials.map((item, i) => (
+              <li key={i} className="text-sm text-slate-300 flex gap-2.5 leading-relaxed">
+                <span className="shrink-0 mt-0.5 text-green-400">✓</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </SectionCard>
+      )}
 
       {/* Booking Strategy */}
       {plan.bestTimeToBook && (

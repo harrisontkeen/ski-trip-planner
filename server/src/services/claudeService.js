@@ -50,6 +50,8 @@ export async function buildTripPlan(inputs) {
   const prompt = `
 You are an expert ski trip planner. Based on the following user inputs, generate a detailed ski trip plan.
 
+Write for a first-time international traveler — picture a college student planning a trip with friends who has never done anything like this. Hold their hand: name real, specific places; give approximate costs and times; and explain the logistics and etiquette they wouldn't know to ask about. Lots of concrete, useful, spoon-fed detail is the goal.
+
 CRITICAL FORMATTING RULES:
 - departureAirport must be ONLY a 3-letter IATA code (e.g. "BOS"). No extra text.
 - nearestAirport must be ONLY a 3-letter IATA code (e.g. "SLC"). No extra text.
@@ -63,6 +65,9 @@ CRITICAL FORMATTING RULES:
 - itinerary must have a MAXIMUM of 14 day entries regardless of trip length. For longer trips, group multiple days together (e.g. "Days 3-5: Powder Days at Snowbird").
 - PREFER resorts from the VERIFIED RESORT DATABASE below that match the user's region(s) and criteria. When you use one, copy its exact name, its lat/lng into mapboxCoords, its site into websiteUrl, its tickets URL into bookingUrl, and its airport as the nearestAirport. Only invent a resort if none in the list fit the request.
 - passRecommendation: if the user's pass type is "none" or "flexible" AND the recommended resorts are all (or mostly) covered by a single pass (Ikon or Epic), recommend that pass — set "pass" to "Ikon" or "Epic", give the approximate current season-pass cost in USD as "estimatedPassCost", and set "worthIt" true if the pass beats buying day lift tickets for this trip. If no single pass clearly helps, set "pass" to "none".
+- gettingThere: 3-6 concrete steps getting from the user's departure location to the resort area — flights, then airport transfers (buses/trains/shuttles) with approximate cost and travel time. Be specific to the destination.
+- essentials: 6-10 practical "know before you go" items SPECIFIC to the destination country — passport/visa rules for a US traveler, money & ATMs, SIM/eSIM/wifi, power plug type, key local etiquette (e.g. onsen rules in Japan), and any transport passes worth buying.
+- foodAndDrink: 4-8 specific recommended spots near the recommended resorts (restaurants, izakaya/local eats, bars, après-ski) — each with a short why. Use real, well-known venues where possible.
 
 USER INPUTS:
 - Budget: $${totalBudget} total ($${perPersonBudget} per person) for ${groupSize} people
@@ -142,7 +147,22 @@ Return ONLY valid JSON in this exact structure, no extra text:
     "reason": "All three recommended resorts are on the Ikon Pass, so one pass covers the whole trip and beats buying day tickets.",
     "estimatedPassCost": 1329,
     "worthIt": true
-  }
+  },
+  "gettingThere": [
+    "Fly from your departure city to the destination airport (~X hrs, 1 stop)",
+    "From the airport, take the [specific shuttle/bus/train] to the resort (~X hrs, approx local cost) — book online in advance"
+  ],
+  "essentials": [
+    "Passport/visa: what a US traveler needs for this country",
+    "Money: cash vs card and where to withdraw local currency",
+    "Stay connected: eSIM or pocket wifi recommendation",
+    "Power plugs: the plug type and voltage",
+    "Local etiquette to know (e.g. onsen rules in Japan)"
+  ],
+  "foodAndDrink": [
+    "A specific restaurant/izakaya near the resort — one-line why",
+    "A bar or après-ski spot — one-line why"
+  ]
 }
   `
 
