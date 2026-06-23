@@ -71,11 +71,11 @@ export default function TripPlanView({ plan }) {
       {/* Pass advice (renders nothing if no single pass helps) */}
       <PassAdvice recommendation={plan.passRecommendation} />
 
-      {/* Live snow */}
-      {plan.topResorts?.length > 0 && (
+      {/* Average snowfall */}
+      {plan.snowReport?.length > 0 && (
         <SectionCard delay={0.16}>
-          <SectionHeading>Current Snow</SectionHeading>
-          <SnowReport resorts={plan.topResorts} />
+          <SectionHeading>Average Snowfall</SectionHeading>
+          <SnowReport snowReport={plan.snowReport} />
         </SectionCard>
       )}
 
@@ -100,6 +100,53 @@ export default function TripPlanView({ plan }) {
             )}
           </div>
           <Itinerary itinerary={plan.itinerary} />
+        </SectionCard>
+      )}
+
+      {/* Getting there */}
+      {plan.gettingThere?.length > 0 && (
+        <SectionCard delay={0.19}>
+          <SectionHeading>Getting There</SectionHeading>
+          <ol className="space-y-3">
+            {plan.gettingThere.map((step, i) => (
+              <li key={i} className="flex gap-3 text-sm text-slate-300">
+                <span className="shrink-0 w-6 h-6 rounded-full bg-blue-600/20 border border-blue-500/30 text-blue-300 text-xs font-bold flex items-center justify-center">{i + 1}</span>
+                <span className="leading-relaxed pt-0.5">{step}</span>
+              </li>
+            ))}
+          </ol>
+        </SectionCard>
+      )}
+
+      {/* Food & nightlife */}
+      {plan.foodAndDrink?.length > 0 && (
+        <SectionCard delay={0.2}>
+          <SectionHeading>Food & Nightlife</SectionHeading>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {plan.foodAndDrink.map((item, i) => {
+              const obj = item && typeof item === 'object'
+              const name = obj ? item.name : item
+              const vibe = obj ? item.vibe : null
+              const why = obj ? item.why : null
+              const url = obj ? item.mapsUrl : null
+              return (
+                <div key={i} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3.5 hover:border-slate-600 transition-colors">
+                  {url ? (
+                    <a href={url} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-white hover:text-amber-300 transition inline-flex items-center gap-1">
+                      {name} <span className="text-amber-400 text-xs">↗</span>
+                    </a>
+                  ) : (
+                    <span className="text-sm font-semibold text-white">{name}</span>
+                  )}
+                  {vibe && (
+                    <div className="text-[10px] uppercase tracking-wide text-amber-300/80 mt-0.5">{vibe}</div>
+                  )}
+                  {why && <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">{why}</p>}
+                </div>
+              )
+            })}
+          </div>
+          <p className="text-xs text-slate-500 mt-3">Tap a spot to open it in Google Maps — live ratings, hours & directions.</p>
         </SectionCard>
       )}
 
@@ -136,6 +183,21 @@ export default function TripPlanView({ plan }) {
           descKey="description"
         />
       </SectionCard>
+
+      {/* Know before you go */}
+      {plan.essentials?.length > 0 && (
+        <SectionCard delay={0.28}>
+          <SectionHeading>Know Before You Go</SectionHeading>
+          <ul className="space-y-2.5">
+            {plan.essentials.map((item, i) => (
+              <li key={i} className="text-sm text-slate-300 flex gap-2.5 leading-relaxed">
+                <span className="shrink-0 mt-0.5 text-green-400">✓</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </SectionCard>
+      )}
 
       {/* Booking Strategy */}
       {plan.bestTimeToBook && (
