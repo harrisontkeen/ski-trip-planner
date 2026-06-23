@@ -62,6 +62,7 @@ CRITICAL FORMATTING RULES:
 - Return ONLY valid JSON, no extra text, no markdown fences.
 - itinerary must have a MAXIMUM of 14 day entries regardless of trip length. For longer trips, group multiple days together (e.g. "Days 3-5: Powder Days at Snowbird").
 - PREFER resorts from the VERIFIED RESORT DATABASE below that match the user's region(s) and criteria. When you use one, copy its exact name, its lat/lng into mapboxCoords, its site into websiteUrl, its tickets URL into bookingUrl, and its airport as the nearestAirport. Only invent a resort if none in the list fit the request.
+- passRecommendation: if the user's pass type is "none" or "flexible" AND the recommended resorts are all (or mostly) covered by a single pass (Ikon or Epic), recommend that pass — set "pass" to "Ikon" or "Epic", give the approximate current season-pass cost in USD as "estimatedPassCost", and set "worthIt" true if the pass beats buying day lift tickets for this trip. If no single pass clearly helps, set "pass" to "none".
 
 USER INPUTS:
 - Budget: $${totalBudget} total ($${perPersonBudget} per person) for ${groupSize} people
@@ -135,7 +136,13 @@ Return ONLY valid JSON in this exact structure, no extra text:
       "activities": ["Morning warm-up on groomed blues", "Ski school lesson if beginner", "Afternoon powder runs", "Après-ski at the lodge"]
     }
   ],
-  "bestTimeToBook": "Book flights 6-8 weeks out for best prices"
+  "bestTimeToBook": "Book flights 6-8 weeks out for best prices",
+  "passRecommendation": {
+    "pass": "Ikon",
+    "reason": "All three recommended resorts are on the Ikon Pass, so one pass covers the whole trip and beats buying day tickets.",
+    "estimatedPassCost": 1329,
+    "worthIt": true
+  }
 }
   `
 
@@ -190,6 +197,12 @@ Return ONLY valid JSON in this exact structure, no extra text:
     throw e
   }
 
+  // Expose group size + dates so the client can show a per-person split and
+  // build calendar events from the itinerary.
+  plan.groupSize = groupCount
+  plan.startDate = startDate
+  plan.endDate = endDate
+
   // Replace the model's booking URLs with deterministic, date-aware links built
   // from the real inputs, so flights / lodging / rental car always resolve and
   // land on the correct dates + guest count. (Lift-ticket links stay the
@@ -219,7 +232,14 @@ Return ONLY valid JSON in this exact structure, no extra text:
       const wantsAirbnb = /airbnb|house|chalet|condo|apartment|rental home|vacation home/i.test(extras || '')
       for (const l of plan.lodgingSuggestions) {
         if (wantsAirbnb || /airbnb/i.test(l.type || '')) {
-          l.searchUrl = `https://www.airbnb.com/s/${loc}/homes?checkin=${startDate}&checkout=${endDate}&adults=${groupCount}`
+          // Tailor to the group: enough bedrooms (~2 per room), an entire place
+          // rather than a private room, and a per-night cap from the lodging budget.
+          const beds = Math.max(1, Math.ceil(groupCount / 2))
+          const lodgingBudget = Number(plan.budgetBreakdown?.lodging)
+          const priceMax = Number.isFinite(lodgingBudget) && lodgingBudget > 0 && nights > 0
+            ? `&price_max=${Math.round(lodgingBudget / nights)}`
+            : ''
+          l.searchUrl = `https://www.airbnb.com/s/${loc}/homes?checkin=${startDate}&checkout=${endDate}&adults=${groupCount}&min_bedrooms=${beds}&room_types%5B%5D=Entire%20home%2Fapt${priceMax}`
           if (!/airbnb/i.test(l.type || '')) l.type = 'Airbnb'
         } else {
           l.searchUrl = `https://www.booking.com/searchresults.html?ss=${loc}&checkin=${startDate}&checkout=${endDate}&group_adults=${groupCount}`
