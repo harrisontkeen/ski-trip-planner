@@ -233,6 +233,13 @@ ski-trip-planner/
 
 ## Work Log
 
+### June 22, 2026
+- Added security featues: Rate limiting to prevent token overuse as well as a limit on the # of accounts
+
+### June 20, 2026
+- Added Auth system using Supabase
+- Polished the look of the app, removing unneeded fluff
+
 ### June 19, 2026
 - Added Mapbox interactive map with resort pins, flight arc, departure/destination markers
 - Added hero background image and results page hero banner
