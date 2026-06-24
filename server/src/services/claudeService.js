@@ -56,6 +56,7 @@ CRITICAL FORMATTING RULES:
 - departureAirport must be ONLY a 3-letter IATA code (e.g. "BOS"). No extra text.
 - nearestAirport must be ONLY a 3-letter IATA code (e.g. "SLC"). No extra text.
 - notes in budgetBreakdown must always be a plain string, never an object.
+- CURRENCY: every monetary value in the response must be in US DOLLARS (USD), never local currency — this includes estimatedLiftTicket, estimatedPassCost, and all budgetBreakdown amounts. Convert foreign prices to USD: a ¥8,500 Japanese day lift ticket is ~57 (NOT 8500); €120 is ~130.
 - budgetBreakdown must reflect REALISTIC current-market costs for the whole group — never lowball, and anchor to the user's stated total budget. Real round-trip airfare per person is ~$200-500 US domestic and ~$900-2000 to Japan/Europe (up to ~$2800 in peak holiday weeks like late Dec / early Jan); lodging ~$150-500/night for a group place; food ~$50-100/person/day; lift tickets per the resort prices above (or ~$0 if a pass covers them). Each category is a TOTAL for the whole group for the whole trip, and "total" must equal their sum — a believable figure that uses a sensible share of the user's budget, not a tiny fraction of it.
 - topResorts must contain EXACTLY 3 resort recommendations, no more, no less.
 - itinerary must have one entry per day of the trip, covering arrival through departure.
