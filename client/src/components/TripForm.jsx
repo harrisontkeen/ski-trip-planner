@@ -337,6 +337,7 @@ export default function TripForm({ onSubmit, loading }) {
                 'Swiss Alps (Zermatt / St. Moritz / Verbier)',
                 'Austrian Alps (Kitzbühel / Ischgl / Sölden)',
                 'Italian Dolomites',
+                'Georgia (Gudauri / Bakuriani / Goderdzi)',
               ]
             },
             {
